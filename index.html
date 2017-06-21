@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Instant Search Bar</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="search_bar.css" rel="stylesheet">
+
+  </head>
+  
+  <body>
+    <div class="container">
+    	<div class="row">
+    		<div class="col-md-12">
+                <div class="input-group" id="adv-search">
+                    <input type="text" id="searchBar" class="form-control" placeholder="Search Companies" />
+                    <div class="input-group-btn">
+                        <div class="btn-group" role="group">
+                            <div class="dropdown dropdown-lg">
+                                <div class="dropdown-menu dropdown-menu-right" role="menu" id="resultsDropdown">
+                                    <!-- generated suggestions go here -->
+                                </div>
+                            </div>
+                            <button type="button" onclick="todaydate()" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+    	</div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins)
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>-->
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+
+    <script src="Jquery/jquery-3.2.1.js"></script>
+    <script src="Javascript/test-script.js"></script>
+    <script src="bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+  </body>
+</html>
