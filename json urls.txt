@@ -1,0 +1,13 @@
+json urls: 
+
+https://api.myjson.com/bins/64n67 -- Output from wiki scraper
+
+
+https://api.myjson.com/bins/qddqn -- stop words 
+
+
+https://api.myjson.com/bins/oz9kn -- companies in case still needed
+
+
+Json for Stop words came from: 
+http://www.stopwords.org

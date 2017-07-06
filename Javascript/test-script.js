@@ -1,8 +1,14 @@
 $(document).ready(function(){
 
+<<<<<<< HEAD
 var jsonData;
 var jSonStop;
 
+=======
+  var jsonData;
+ var jSonStop;
+ 
+>>>>>>> 9a29dded864c8d6bcb25ac90125e8044bd4661c1
   $.getJSON('https://api.myjson.com/bins/64n67', function(data) {
     //data is the JSON string
     jsonData = data;
@@ -15,11 +21,16 @@ var jSonStop;
 
   $.getJSON('https://api.myjson.com/bins/qddqn', function(nData){
       //nData is the JSON string of stopwords
+<<<<<<< HEAD
       jSonStop = nData;
 
   });
 
 
+=======
+      jSonStop = nData; 
+  });
+>>>>>>> 9a29dded864c8d6bcb25ac90125e8044bd4661c1
   //assign the function filterResults to the searchBar
   $("#searchBar").keyup(filterResults);
 
@@ -32,6 +43,7 @@ var jSonStop;
     else{
       //Clear the dropdown.
       $("#resultsDropdown").empty();
+<<<<<<< HEAD
 
 
       //searchArray = ["fly", "fishing"]                                    //Regular Array
@@ -48,6 +60,25 @@ var jSonStop;
         //this part is rough to maintain if the data-structure changes.
         var title = value["Title"].toUpperCase();
         if (title.includes(searchString)){
+=======
+     
+     //create array of words in search query
+      var searchArray = searchString.split(" ");
+      
+      //i feel like there is a much more efficient way to accomplish this.
+      for(var i = 0; i < searchArray.length; i++){
+          if(jSonStop.includes(searchArray [i]){
+              searchArray.splice(i, 1);
+          }
+      }
+     
+      var matches = 0;
+      //Iterate through the jsonData. 
+      $.each(jsonData, function( index, value ) {
+        //this part is rough to maintain if the data-structure changes.
+        var companyName = value["company"].toUpperCase();
+        if (value["company"].includes(searchString)){
+>>>>>>> 9a29dded864c8d6bcb25ac90125e8044bd4661c1
           matches++;
           //This is naive, we'll need to capture related suggestions and sort them by relatibilty later on.
           $("#resultsDropdown").append('<li ><a href="#">' + value["Title"] + '</a></li>');
