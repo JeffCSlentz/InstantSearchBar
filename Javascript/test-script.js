@@ -1,49 +1,41 @@
-$(document).ready(function(){
+$(document).ready(function() {
 
-<<<<<<< HEAD
-var jsonData;
-var jSonStop;
-
-=======
   var jsonData;
- var jSonStop;
- 
->>>>>>> 9a29dded864c8d6bcb25ac90125e8044bd4661c1
+  var jSonStop;
+
   $.getJSON('https://api.myjson.com/bins/64n67', function(data) {
     //data is the JSON string
     jsonData = data;
+
     console.log(jsonData[1]);
 
-    var obj = {"Name": "Raj", "Something": "lol"};
+    var obj = {
+      "Name": "Raj",
+      "Something": "lol"
+    };
 
     console.log(obj);
   });
 
-  $.getJSON('https://api.myjson.com/bins/qddqn', function(nData){
-      //nData is the JSON string of stopwords
-<<<<<<< HEAD
-      jSonStop = nData;
+  $.getJSON('https://api.myjson.com/bins/qddqn', function(nData) {
+    //nData is the JSON string of stopwords
+    jSonStop = nData;
 
   });
 
 
-=======
-      jSonStop = nData; 
-  });
->>>>>>> 9a29dded864c8d6bcb25ac90125e8044bd4661c1
   //assign the function filterResults to the searchBar
   $("#searchBar").keyup(filterResults);
+  //$("#searchButton").click(filterResults);
 
-  function filterResults(){
+  function filterResults() {
     var searchString = $("#searchBar").val().toUpperCase();
-    if (searchString == ""){
+    if (searchString == "") {
       //I think bootstrap does this automatically with classes? I'm not sure how, so I've done it this way.
       $("#resultsDropdown").hide();
-    }
-    else{
+    } else {
       //Clear the dropdown.
       $("#resultsDropdown").empty();
-<<<<<<< HEAD
 
 
       //searchArray = ["fly", "fishing"]                                    //Regular Array
@@ -51,90 +43,147 @@ var jSonStop;
       var searchArray = splitAndRemoveExtraWords(searchString);
       var searchPermutations = makePermutations(searchArray);
 
-      var searchResults = search(searchPermutations);
+      //Search and score the results.
+      var searchResults = searchWithoutOrder(searchArray);
 
-      var matches = 0;
-
-      //Iterate through the jsonData.
-      $.each(jsonData, function( index, value ) {
-        //this part is rough to maintain if the data-structure changes.
-        var title = value["Title"].toUpperCase();
-        if (title.includes(searchString)){
-=======
-     
-     //create array of words in search query
-      var searchArray = searchString.split(" ");
-      
-      //i feel like there is a much more efficient way to accomplish this.
-      for(var i = 0; i < searchArray.length; i++){
-          if(jSonStop.includes(searchArray [i]){
-              searchArray.splice(i, 1);
-          }
-      }
-     
-      var matches = 0;
-      //Iterate through the jsonData. 
-      $.each(jsonData, function( index, value ) {
-        //this part is rough to maintain if the data-structure changes.
-        var companyName = value["company"].toUpperCase();
-        if (value["company"].includes(searchString)){
->>>>>>> 9a29dded864c8d6bcb25ac90125e8044bd4661c1
-          matches++;
-          //This is naive, we'll need to capture related suggestions and sort them by relatibilty later on.
-          $("#resultsDropdown").append('<li ><a href="#">' + value["Title"] + '</a></li>');
-        }
-
-        if (matches > 5){
-          return false;
-        }
+      //Convert it to a sortable array, then sort by score.
+      searchResultsArray = convertToArray(searchResults);
+      searchResultsArray.sort(function(a, b) {
+        return b["score"] - a["score"];
       });
+
+      //Build the HTML, and add it to the dropdown.
+      resultsHTML = convertToHTML(searchResultsArray);
+      $("#resultsDropdown").append(resultsHTML);
       $("#resultsDropdown").show();
     }
   }
 
-  function splitAndRemoveExtraWords(searchString){
-      var searchArray = searchString.split(" ");
+  function convertToHTML(searchResultsArray) {
+    var resultsHTML = "";
+    $.each(searchResultsArray, function(i, result) {
+      resultsHTML += '<li ><a href="'+ result["URL"] +'">' + result["Title"] + '</a></li>';
+    });
 
-      //i feel like there is a much more efficient way to accomplish this.
-      for(var i = 0; i < searchArray.length; i++){
-          if(jSonStop.includes(searchArray [i])){
-              searchArray.splice(i, 1);
-          }
+    return resultsHTML;
+  }
+
+  function splitAndRemoveExtraWords(searchString) {
+    var searchArray = searchString.split(" ");
+
+    //i feel like there is a much more efficient way to accomplish this.
+    for (var i = 0; i < searchArray.length; i++) {
+      if (jSonStop.includes(searchArray[i])) {
+        searchArray.splice(i, 1);
       }
-
-      return searchArray;
-  }
-
-  function makePermutations(searchArray){
-      //TODO: Implement
-
-
-      //This just turns it into a 2d array with one entry.
-      var searchPermutations = [searchArray];
-      return searchPermutations;
-  }
-
-    function search(searchPermutations){
-
-        var score;
-
-
-        $.each(jsonData, function(i, jsonEntry) {
-            $.each(searchPermutations, function( j, searchArray ) {
-                $.each(searchArray, function( j, searchTerm ) {
-                    var matchFound = false;
-
-                    if(jsonEntry["Title"].includes(searchTerm)){
-                        matchFound = true;
-                        //TODO: calculate a score for matching the title
-                    }
-
-                    if(jsonEntry["Summary"].includes(searchTerm)){
-                        matchfound
-                        //TODO: calculate a score for matching the description.
-                    }
-                });
-            });
-        });
     }
+
+    return searchArray;
+  }
+
+  //TODO: Implement
+  function makePermutations(searchArray) {
+
+    //This just turns it into a 2d array with one entry.
+    var searchPermutations = [searchArray];
+    return searchPermutations;
+  }
+
+  function searchWithOrder(searchPermutations) {
+    //TODO Order is getting really complicated =/
+    //     so I gave up on it for now, RIP
+
+    searchResults = {};
+
+    $.each(jsonData, function(i, jsonEntry) { //The entire database
+      $.each(searchPermutations, function(j, searchArray) { //The 2d array of search permutations. [ ["fly", "fishing"], ["fly"], ["fishing"] ]
+        $.each(searchArray, function(j, searchTerm) { //One permutation.                     ["fly", "fishing"]
+          var matchFound = false;
+          var score = 0;
+
+          if (jsonEntry["Title"].includes(searchTerm)) {
+            matchFound = true;
+            score += 1000;
+
+            titleKey = jsonEntry["Title"];
+
+            searchResults[titleKey] = jsonEntry;
+            searchResults[titleKey]["score"] = score;
+
+
+            console.log(searchResults[titleKey]);
+            //TODO: calculate a score for matching the title
+          }
+
+          if (jsonEntry["Summary"].includes(searchTerm)) {
+            matchfound = true;
+            score += 100;
+            //TODO: calculate a score for matching the description.
+          }
+        });
+      });
+    });
+  }
+
+  function searchWithoutOrder(searchArray) {
+    searchResults = {};
+
+    var TITLEMATCH = 1000;
+    var SUMMARYMATCH = 100;
+
+    $.each(jsonData, function(i, jsonEntry) {
+      titleKey = jsonEntry["Title"];
+      var score = 0;
+      //The entire database
+      $.each(searchArray, function(j, term) { //A regular array of search terms             ["fly", "fishing"]
+
+
+        if (jsonEntry["Title"].toUpperCase().includes(term)) {
+
+          if (typeof searchResults[titleKey] == "undefined") { //True = entry doesn't exist
+            searchResults[titleKey] = jsonEntry;
+            searchResults[titleKey]["score"] = 0;
+          }
+
+          var instances = countInstances(jsonEntry["Title"].toUpperCase(), term);
+
+          searchResults[titleKey]["score"] += TITLEMATCH * instances;
+
+        }
+
+        if (jsonEntry["Summary"].toUpperCase().includes(term)) {
+          score += 100;
+
+
+          if (typeof searchResults[titleKey] == "undefined") { //True = entry doesn't exist
+            searchResults[titleKey] = jsonEntry;
+            searchResults[titleKey]["score"] = 0;
+          }
+
+          var instances = countInstances(jsonEntry["Summary"].toUpperCase(), term);
+
+          searchResults[titleKey]["score"] += SUMMARYMATCH * instances;
+
+        }
+      });
+    });
+    console.log(searchResults);
+    return searchResults;
+  }
+
+  function countInstances(string, word) {
+    var substrings = string.split(word);
+    return substrings.length - 1;
+  }
+
+  function convertToArray(map) {
+    var array = [];
+
+    $.each(map, function(i, item) {
+      array.push(item);
+    });
+
+    return array;
+  }
+
 });
