@@ -1,7 +1,7 @@
 import wikipedia
 import json
 
-listOfHobbiesPage = wikipedia.page("List of Hobbies")
+listOfHobbiesPage = wikipedia.page("Outline of academic disciplines")
 index = 0
 myList = []
 for hobbyString in listOfHobbiesPage.links:
@@ -10,6 +10,7 @@ for hobbyString in listOfHobbiesPage.links:
         myList.append(myDict)
     except Exception:
         print(hobbyString + " not found, probably.")
+    print(hobbyString)
 
 myJsonData = json.dumps(myList)
 
