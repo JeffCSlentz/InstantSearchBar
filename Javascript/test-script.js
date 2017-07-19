@@ -2,8 +2,9 @@ $(document).ready(function() {
 
   var jsonData;
   var jSonStop;
+  //var suggestionsJson;
 
-  $.getJSON('https://api.myjson.com/bins/64n67', function(data) {
+  $.getJSON('https://api.myjson.com/bins/j68kn', function(data) {
     jsonData = data;  //data is the JSON string
   });
 
@@ -19,10 +20,8 @@ $(document).ready(function() {
   function filterResults() {
     var searchString = $("#searchBar").val().toUpperCase();
     if (searchString == "") {
-      //I think bootstrap does this automatically with classes? I'm not sure how, so I've done it this way.
       $("#resultsDropdown").hide();
     } else {
-      //Clear the dropdown.
       $("#resultsDropdown").empty();
 
 
@@ -31,9 +30,18 @@ $(document).ready(function() {
       var searchArray = splitAndRemoveExtraWords(searchString);
       var searchPermutations = makePermutations(searchArray);
 
-      //Search and score the results.
-      var searchResults = searchWithoutOrder(searchArray);
+      var suggestionsJSON = grabSuggestedWords(searchArray); //[{score:INT, word:STRING}, {score:INT, word:STRING}]
+      console.log(suggestionsJSON);
 
+      var similarWordsJSON = grabSimilarWords(suggestionsJSON);
+
+      console.log(similarWordsJSON);
+
+      //Search and score the results.
+      //var searchResults = searchWithoutOrder(searchArray);
+      var searchResults = bigSearchWithoutOrder(similarWordsJSON)
+
+      console.log(searchResults);
       //Convert it to a sortable array, then sort by score.
       searchResultsArray = convertToArray(searchResults);
       searchResultsArray.sort(function(a, b) {
@@ -41,13 +49,97 @@ $(document).ready(function() {
       });
 
       //Build the HTML, and add it to the dropdown.
-      resultsHTML = convertToHTML(searchResultsArray);
+      resultsHTML = convertToHTML(searchResultsArray, searchString);
       $("#resultsDropdown").append(resultsHTML);
       $("#resultsDropdown").show();
     }
   }
 
-  function convertToHTML(searchResultsArray) {
+  //Takes in an array of Strings.
+  //Will take three auto suggestions for the last "word" in the searchArray.
+  //Gives earlier words a score of 100,000 for funsies.
+  function grabSuggestedWords(searchArray){
+    var suggestionsJSON = [];
+    $.each(searchArray, function(i, searchTerm) {
+      var tempJSON = {};
+      var data;
+      $.ajax({
+        dataType: "json",
+        url: 'https://api.datamuse.com/sug?s=' + searchTerm,
+        data: data,
+        async: false,
+        success: function(data) {
+          tempJSON = data;
+        }
+      });
+
+      if (typeof suggestionsJSON != "undefined" && typeof tempJSON != "undefined") {
+        var tempArray = convertToArray(tempJSON);
+        tempArray = tempArray.slice(0,4);
+
+        $.each(tempArray, function(i, result){
+          if (result["word"].toUpperCase() == searchTerm.toUpperCase()){
+            suggestionsJSON.push(result);
+            return false;
+          } else {
+            suggestionsJSON.push(result);
+          }
+
+        });
+      }
+    });
+    return suggestionsJSON;
+  }
+
+  //TODO: Finish
+  function grabSimilarWords(suggestionsArray) {
+    var similarWords = [];
+
+    $.each(suggestionsArray, function(i, suggestion){ //suggestion = {score:10000, word:"something"}
+
+      //First, push the suggestion back on, with a bonus added.
+      var word = suggestion["word"];
+      var score = suggestion["score"] + 100000;
+      similarWords.push({score, word});
+
+      var tempJSON = {};
+      var data;
+      /*
+      $.ajax({
+        dataType: "json",
+        url: 'https://api.datamuse.com/words?rel_trg=' + suggestion["word"],
+        data: data,
+        async: false,
+        success: function(data) {
+          tempJSON = data;
+        }
+      });
+      */
+
+      $.ajax({
+        dataType: "json",
+        url: 'https://api.datamuse.com/words?ml=' + suggestion["word"],
+        data: data,
+        async: false,
+        success: function(data) {
+          tempJSON = data;
+        }
+      });
+
+
+      if (typeof suggestionsArray != "undefined" && typeof tempJSON != "undefined") {
+        var tempArray = convertToArray(tempJSON);
+        tempArray = tempArray.slice(0,6);
+        $.each(tempArray, function(i, result){
+          similarWords.push(result);
+        });
+      }
+
+    });
+    return similarWords;
+  }
+
+  function convertToHTML(searchResultsArray, searchString) {
     var resultsHTML = "";
     var indent = "&nbsp".repeat(6);
 
@@ -58,6 +150,11 @@ $(document).ready(function() {
 
     return resultsHTML;
   }
+
+  //TODO: Implement
+  function boldMatching(resultString, searchString){
+  }
+
 
   function splitAndRemoveExtraWords(searchString) {
     var searchArray = searchString.split(" ");
@@ -80,25 +177,7 @@ $(document).ready(function() {
     return searchPermutations;
   }
 
-  //TODO: Finish
-  function grabSimilarWords(searchArray) {
-    var url = "https://api.datamuse.com/words?ml="
-    var relatedWords = [];
-    var relatedWordsJSON;
 
-    $.each(searchArray, function(i, searchTerm){
-      console.log(url + searchTerm)
-
-      $.getJSON(url + searchTerm, function(data){
-        relatedWordsJSON = data;
-        console.log(relatedWordsJSON);
-      });
-      setTimeout(function(){
-        console.log(relatedWordsJSON);
-      }, 100);
-    });
-
-  }
 
   function searchWithOrder(searchPermutations) {
     //TODO Order is getting really complicated =/
@@ -122,7 +201,6 @@ $(document).ready(function() {
             searchResults[titleKey]["score"] = score;
 
 
-            //console.log(searchResults[titleKey]);
             //TODO: calculate a score for matching the title
           }
 
@@ -137,12 +215,12 @@ $(document).ready(function() {
   }
 
   function searchWithoutOrder(searchArray) {
-    //TODO: Improve the scoring; the first match should be worth more than the next matches for each word.
+    //TODO: cry
     searchResults = {};
 
-    grabSimilarWords(searchArray);
+    //grabSimilarWords(searchArray);
 
-    var FIRSTCHARACTERMATCHMULTIPLIER = 10;
+    var FIRSTCHARACTERMATCHBONUS = 10000;
     var FIRSTTITLEMATCH = 10000;
     var NEXTTITLEMATCHES = 1000;
     var FIRSTSUMMARYMATCH = 1000;
@@ -160,7 +238,7 @@ $(document).ready(function() {
                                  titleKey:titleKey,
                                  firstMatch:FIRSTTITLEMATCH,
                                  nextMatches:NEXTTITLEMATCHES,
-                                 firstCharacterMatchMultiplier:FIRSTCHARACTERMATCHMULTIPLIER};
+                                 firstCharacterMatchBonus:FIRSTCHARACTERMATCHBONUS};
 
          var scorePayloadSummary = {searchTerm:term,
                                     searchResults:searchResults,
@@ -169,7 +247,7 @@ $(document).ready(function() {
                                     titleKey:titleKey,
                                     firstMatch:FIRSTSUMMARYMATCH,
                                     nextMatches:NEXTSUMMARYMATCHES,
-                                    firstCharacterMatchMultiplier:FIRSTCHARACTERMATCHMULTIPLIER};
+                                    firstCharacterMatchBonus:FIRSTCHARACTERMATCHBONUS};
 
 
         scoreATerm(scorePayloadTitle);
@@ -213,15 +291,95 @@ $(document).ready(function() {
         */
       });
     });
-    //console.log(searchResults);
     return searchResults;
   }
 
+  function bigSearchWithoutOrder(searchJSON) {
+    //TODO: cry
+    searchResults = {};
+
+    //grabSimilarWords(searchArray);
+
+    var FIRSTCHARACTERMATCHBONUS = 10000;
+    var FIRSTTITLEMATCH = 10000;
+    var NEXTTITLEMATCHES = 1000;
+    var FIRSTSUMMARYMATCH = 1000;
+    var NEXTSUMMARYMATCHES = 100;
+
+    $.each(jsonData, function(i, jsonEntry) {
+      titleKey = jsonEntry["Title"];
+      //The entire database
+      $.each(searchJSON, function(j, term) { //searchJSON = [{score:100, word:"lol"}, {score:150, word:"loller"}, ...]
+
+        var scorePayloadTitle = {searchTerm:term["word"],
+                                 searchResults:searchResults,
+                                 jsonEntry:jsonEntry,
+                                 jsonEntryKey:"Title",
+                                 titleKey:titleKey,
+                                 firstMatch:FIRSTTITLEMATCH,
+                                 nextMatches:NEXTTITLEMATCHES,
+                                 firstCharacterMatchBonus:FIRSTCHARACTERMATCHBONUS,
+                                 score:term["score"]};
+
+         var scorePayloadSummary = {searchTerm:term["word"],
+                                    searchResults:searchResults,
+                                    jsonEntry:jsonEntry,
+                                    jsonEntryKey:"Summary",
+                                    titleKey:titleKey,
+                                    firstMatch:FIRSTSUMMARYMATCH,
+                                    nextMatches:NEXTSUMMARYMATCHES,
+                                    firstCharacterMatchBonus:FIRSTCHARACTERMATCHBONUS,
+                                    score:term["score"]};
+
+
+        scoreATerm(scorePayloadTitle);
+        scoreATerm(scorePayloadSummary);
+
+        /*
+        if (jsonEntry["Title"].toUpperCase().includes(term)) {
+          var firstCharacterBoolean = false;
+          if (jsonEntry["Title"].toUpperCase().includes(" " + term)) {
+            firstCharacterBoolean = true;
+          }
+
+          if (typeof searchResults[titleKey] == "undefined") { //True = entry doesn't exist
+            searchResults[titleKey] = jsonEntry;
+            searchResults[titleKey]["score"] = 0;
+          }
+
+          var instances = countInstances(jsonEntry["Title"].toUpperCase(), term);
+
+          if(firstCharacterBoolean){
+            searchResults[titleKey]["score"] += FIRSTTITLEMATCH * FIRSTCHARACTERMATCHMULTIPLIER;
+            searchResults[titleKey]["score"] += NEXTTITLEMATCHES * instances - 1 * FIRSTCHARACTERMATCHMULTIPLIER; //lol, like this will ever happen
+          } else {
+            searchResults[titleKey]["score"] += FIRSTTITLEMATCH;
+            searchResults[titleKey]["score"] += NEXTTITLEMATCHES * instances - 1; //lol, like this will ever happen
+          }
+
+        }
+
+        if (jsonEntry["Summary"].toUpperCase().includes(term)) {
+          if (typeof searchResults[titleKey] == "undefined") { //True = entry doesn't exist
+            searchResults[titleKey] = jsonEntry;
+            searchResults[titleKey]["score"] = 0;
+          }
+
+          var instances = countInstances(jsonEntry["Summary"].toUpperCase(), term);
+
+          searchResults[titleKey]["score"] += FIRSTSUMMARYMATCH;
+          searchResults[titleKey]["score"] += NEXTSUMMARYMATCHES * instances - 1;
+        }
+        */
+      });
+    });
+    return searchResults;
+  }
 
   function scoreATerm(payload){
-    if (payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase().includes(payload["searchTerm"])) {
+    if (payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase().includes(payload["searchTerm"].toUpperCase())) {
       var firstCharacterBoolean = false;
-      if (payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase().includes(" " + payload["searchTerm"])) {
+      if (payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase().includes(" " + payload["searchTerm"].toUpperCase()) || payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase().charAt(0) == payload["searchTerm"].toUpperCase().charAt(0)) {
         firstCharacterBoolean = true;
       }
 
@@ -230,14 +388,14 @@ $(document).ready(function() {
         payload["searchResults"][payload["titleKey"]]["score"] = 0;
       }
 
-      var instances = countInstances(payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase(), payload["searchTerm"]);
+      var instances = countInstances(payload["jsonEntry"][payload["jsonEntryKey"]].toUpperCase(), payload["searchTerm"].toUpperCase());
 
       if(firstCharacterBoolean){
-        payload["searchResults"][payload["titleKey"]]["score"] += payload["firstMatch"] * payload["firstCharacterMatchMultiplier"];
-        payload["searchResults"][payload["titleKey"]]["score"] += payload["nextMatches"] * (instances - 1) * payload["firstCharacterMatchMultiplier"]; //lol, like this will ever happen
+        payload["searchResults"][payload["titleKey"]]["score"] += payload["firstMatch"] + payload["firstCharacterMatchBonus"] + payload["score"];
+        payload["searchResults"][payload["titleKey"]]["score"] += payload["nextMatches"] + (instances - 1) * payload["firstCharacterMatchBonus"] + payload["score"]; //lol, like this will ever happen
       } else {
-        payload["searchResults"][payload["titleKey"]]["score"] += payload["firstMatch"];
-        payload["searchResults"][payload["titleKey"]]["score"] += payload["nextMatches"] * (instances - 1); //lol, like this will ever happen
+        payload["searchResults"][payload["titleKey"]]["score"] += payload["firstMatch"] + payload["score"];
+        payload["searchResults"][payload["titleKey"]]["score"] += payload["nextMatches"] * (instances - 1) + payload["score"]; //lol, like this will ever happen
       }
     }
   }

@@ -1,7 +1,7 @@
 import wikipedia
 import json
 
-listOfHobbiesPage = wikipedia.page("Outline of academic disciplines")
+listOfHobbiesPage = wikipedia.page("List of water sports")
 index = 0
 myList = []
 for hobbyString in listOfHobbiesPage.links:
