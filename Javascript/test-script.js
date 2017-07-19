@@ -31,16 +31,19 @@ $(document).ready(function() {
       var searchPermutations = makePermutations(searchArray);
 
       var suggestionsJSON = grabSuggestedWords(searchArray); //[{score:INT, word:STRING}, {score:INT, word:STRING}]
+      console.log("vv The List of Autosuggested Words vv");
       console.log(suggestionsJSON);
 
       var similarWordsJSON = grabSimilarWords(suggestionsJSON);
 
+      console.log("vv The List of words similar in meaning to the autosuggested words vv");
       console.log(similarWordsJSON);
 
       //Search and score the results.
       //var searchResults = searchWithoutOrder(searchArray);
       var searchResults = bigSearchWithoutOrder(similarWordsJSON)
 
+      console.log("vv The actual search results vv");
       console.log(searchResults);
       //Convert it to a sortable array, then sort by score.
       searchResultsArray = convertToArray(searchResults);
