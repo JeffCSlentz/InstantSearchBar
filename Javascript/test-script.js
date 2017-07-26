@@ -81,6 +81,7 @@ $(document).ready(function() {
     console.clear();
 
     var searchString = $("#searchBar").val().toUpperCase();
+    var searchString = searchString.replace(/\?/g,'');
     var searchArray = splitAndRemoveExtraWords(searchString); //Split on spaces and filter out stopwords.
 
     if (searchArray.length == 0) {  //If all the user words got filtered out.
@@ -354,8 +355,12 @@ $(document).ready(function() {
     $.each(matchedWords, function(i, matchedWord){
       var matchingIndex = titleString.toUpperCase().indexOf(matchedWord.word.toUpperCase());
       if (matchingIndex != -1){
-        title =  titleString.slice(0, matchingIndex) + titleString.slice(matchingIndex, matchingIndex + matchedWord.word.length).bold() + titleString.slice(matchingIndex + matchedWord.word.length);
-        return false;
+        if (matchedWord.status == "complete" || matchedWord.status == "incomplete"){
+          title =  titleString.slice(0, matchingIndex) + titleString.slice(matchingIndex, matchingIndex + matchedWord.word.length).bold() + titleString.slice(matchingIndex + matchedWord.word.length);
+          return false;
+        } else {
+          title =  titleString.slice(0, matchingIndex) + titleString.slice(matchingIndex, matchingIndex + matchedWord.word.length).italics() + titleString.slice(matchingIndex + matchedWord.word.length);
+        }
       }
     });
     return title;
