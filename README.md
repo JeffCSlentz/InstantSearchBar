@@ -6,4 +6,4 @@ This experiment's goal is to gauge user response to finding similar words in the
 
 ## Design
 
-![:)](http://imgur.com/a/cEuaK)
+![:)](http://i.imgur.com/F7SvCCb.png)
