@@ -14,6 +14,9 @@ The search bar differentiates between complete words and incomplete words. For i
 For complete words, exact matches are bolded, and similar matches are in italics. The results dropdown and similar words on the side of the page are updated dynamically.
 ![Similar and exact matches are highlighted differently](http://i.imgur.com/F7SvCCb.png)
 
+## User testing
+User testing can be found at the end of the [Summary Report](Summary-Report.docx)
+
 ## Data Schema
 ![Three objects hold all the information](http://i.imgur.com/e5ZJXDX.png)
 
