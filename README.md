@@ -3,10 +3,10 @@ A search bar for testing different visual cues of data matching.
 Try it out!
 http://kchovercam.com/search-bar/
 
-## Introduction
+### Introduction
 This experiment's goal is to gauge user response to finding similar words in the search results. User’s responses could be used to inform a good UI design that made it clear what was happening with their search query. 
 
-## Functionality
+### Functionality
 The search bar differentiates between complete words and incomplete words. For incomplete words, a word is autosuggested.
 
 ![Incomplete words have an autosuggested word](http://i.imgur.com/Vw2aeFK.png)
@@ -14,13 +14,13 @@ The search bar differentiates between complete words and incomplete words. For i
 For complete words, exact matches are bolded, and similar matches are in italics. The results dropdown and similar words on the side of the page are updated dynamically.
 ![Similar and exact matches are highlighted differently](http://i.imgur.com/F7SvCCb.png)
 
-## User testing
+### User testing
 User testing can be found at the end of the [Summary Report](Summary-Report.docx)
 
-## Data Schema
+### Data Schema
 ![Three objects hold all the information](http://i.imgur.com/e5ZJXDX.png)
 
-## Algorithm
+### Algorithm
 1.	Grab the user’s query.
 2.	Split it into words.
     - Discard less useful words according to a list from http://www.stopwords.org
